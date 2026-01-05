@@ -1,0 +1,167 @@
+/* styles.css */
+
+body {
+  font-family: system-ui, Arial, sans-serif;
+  margin: 0;
+  padding: 10px;
+
+  background-size: 100% auto;
+  background-repeat: repeat-y;
+  background-position: top center;
+}
+
+.overlay {
+  background: rgba(255, 255, 255, 0.55);
+  backdrop-filter: blur(6px);
+  padding: 12px;
+  border-radius: 16px;
+  max-width: 1200px;
+  margin: auto;
+}
+
+input, button, select, textarea {
+  padding: 4px 6px;
+  margin: 2px 2px;
+  border-radius: 6px;
+  border: none;
+  font-size: 0.9rem;
+}
+
+button {
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+}
+
+/* TABLA */
+#table {
+  overflow-x: auto;
+  width: 100%;
+  margin-top: 10px;
+}
+
+table {
+  border-collapse: collapse;
+  background: white;
+  width: 100%;
+  border-radius: 12px;
+  table-layout: auto;
+}
+
+th, td {
+  border: 1px solid #ddd;
+  padding: 2px 4px;
+  text-align: center;
+  white-space: nowrap;
+  vertical-align: middle;
+  font-size: 0.85rem;
+}
+
+th {
+  background: #f0f0f0;
+}
+
+/* CONTROLES */
+.ctrl {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 2px;
+  margin-top: 1px;
+  flex-wrap: nowrap;
+}
+
+.ctrl-btn {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: none;
+  font-size: 10px;
+  background: #eee;
+  cursor: pointer;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+.edit-mode .ctrl-btn { display: flex; }
+
+.ctrl-btn:hover { background: #ddd; }
+.ctrl-btn.move { color: #333; }
+.ctrl-btn.del { color: #b00000; }
+
+/* PUNTUACIÓN */
+.score {
+  font-weight: bold;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+/* TECLADO */
+#keypadOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.4);
+  display: none;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+#keypad {
+  background: white;
+  width: 100%;
+  max-width: 380px;
+  margin: auto;
+  padding: 12px;
+  border-radius: 20px 20px 0 0;
+}
+
+#display {
+  font-size: 1.8rem;
+  text-align: right;
+  padding: 6px;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  margin-bottom: 8px;
+}
+
+.keypad-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+}
+
+.keypad-grid button {
+  padding: 12px;
+  font-size: 1.2rem;
+  border-radius: 12px;
+}
+
+.keypad-actions {
+  display: flex;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.keypad-actions button 
+{
+  flex: 1; 
+  padding: 12px;
+  font-size: 1.2rem;
+  border-radius: 12px;
+}
+
+/* Compacto cuando no hay modo edición */
+.compact th, .compact td 
+{
+  padding: 5px 2px; 
+  font-size: 0.8rem; 
+}
+
+@media (max-width: 600px) {
+  th, td { font-size: 0.8rem; padding: 2px 3px; }
+  .ctrl-btn { width: 18px; height: 18px; font-size: 9px; }
+  .keypad-grid button { padding: 10px; font-size: 1rem; }
+  .keypad-actions button { padding: 10px; font-size: 1rem; }
+  textarea { font-size: 0.8rem; }
+}

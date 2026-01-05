@@ -1,450 +1,78 @@
 <!DOCTYPE html>
 <html lang="es">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Board Games Scorer</title>
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Board Games Scorer</title>
+    <link rel="stylesheet" href="css/styles.css">
+  </head>
+  <body>
+    <div class="overlay">
+      <h1>Board Games Scorer</h1>
 
-<style>
-body {
-  font-family: system-ui, Arial, sans-serif;
-  margin: 0;
-  padding: 10px;
+      <select id="savedGames"></select>
+      <button onclick="loadGame()">Load</button>
+      <button onclick="saveGame()">Save</button>
+      <button id="toggleEdit" onclick="toggleEdit()">Edit mode</button>
 
-  background-size: 100% auto;
-  background-repeat: repeat-y;
-  background-position: top center;
-}
+      <input id="gameName" placeholder="Name ...">
+      <button onclick="newGame()">New</button>
 
-.overlay {
-  background: rgba(255, 255, 255, 0.55);
-  backdrop-filter: blur(6px);
-  padding: 12px;
-  border-radius: 16px;
-  max-width: 1200px;
-  margin: auto;
-}
+      <hr>
 
-input, button, select, textarea {
-  padding: 4px 6px;
-  margin: 2px 2px;
-  border-radius: 6px;
-  border: none;
-  font-size: 0.9rem;
-}
+      <div id="config" style="display:none">
+        <h2 id="title"></h2>
 
-button {
-  background: rgba(0, 0, 0, 0.8);
-  color: white;
-}
+        <input id="bgUrl" placeholder="URL background image ...">
+        <button onclick="setBackground()">Apply</button>
 
-/* TABLA */
-#table {
-  overflow-x: auto;
-  width: 100%;
-  margin-top: 10px;
-}
+        <h3>Players</h3>
+        <input id="playerName" placeholder="Player ...">
+        <button onclick="addPlayer()">Add</button>
 
-table {
-  border-collapse: collapse;
-  background: white;
-  width: 100%;
-  border-radius: 12px;
-  table-layout: auto;
-}
+        <h3>Item</h3>
+        <input id="sectionName" placeholder="Item ...">
+        <input id="mult" type="number" value="1">
+        <button onclick="addSection()">Add</button>
 
-th, td {
-  border: 1px solid #ddd;
-  padding: 2px 4px;
-  text-align: center;
-  white-space: nowrap;
-  vertical-align: middle;
-  font-size: 0.85rem;
-}
+        <h3>Score</h3>
+        <div id="table"></div>
 
-th {
-  background: #f0f0f0;
-}
+        <hr>
+        <h3>Export / Import all</h3>
+        <button onclick="exportAllGames()">Export all</button>
+        <textarea id="exportArea" rows="4" style="width:100%;" placeholder="The exported JSON will appear here"></textarea>
+        <textarea id="importArea" rows="4" style="width:100%;" placeholder="Paste a JSON here to import"></textarea>
+        <button onclick="importAllGames()">Import all</button>
 
-/* CONTROLES */
-.ctrl {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 2px;
-  margin-top: 1px;
-  flex-wrap: nowrap;
-}
-
-.ctrl-btn {
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  border: none;
-  font-size: 10px;
-  background: #eee;
-  cursor: pointer;
-  display: none;
-  align-items: center;
-  justify-content: center;
-  padding: 0;
-}
-
-.edit-mode .ctrl-btn { display: flex; }
-
-.ctrl-btn:hover { background: #ddd; }
-.ctrl-btn.move { color: #333; }
-.ctrl-btn.del { color: #b00000; }
-
-/* PUNTUACIÓN */
-.score {
-  font-weight: bold;
-  cursor: pointer;
-  font-size: 0.9rem;
-}
-
-/* TECLADO */
-#keypadOverlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,.4);
-  display: none;
-  align-items: flex-end;
-  justify-content: center;
-}
-
-#keypad {
-  background: white;
-  width: 100%;
-  max-width: 380px;
-  margin: auto;
-  padding: 12px;
-  border-radius: 20px 20px 0 0;
-}
-
-#display {
-  font-size: 1.8rem;
-  text-align: right;
-  padding: 6px;
-  border: 1px solid #ccc;
-  border-radius: 10px;
-  margin-bottom: 8px;
-}
-
-.keypad-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 6px;
-}
-
-.keypad-grid button {
-  padding: 12px;
-  font-size: 1.2rem;
-  border-radius: 12px;
-}
-
-.keypad-actions {
-  display: flex;
-  gap: 6px;
-  margin-top: 8px;
-}
-
-.keypad-actions button { flex: 1; }
-
-/* Compacto cuando no hay modo edición */
-.compact th, .compact td { padding: 1px 2px; font-size: 0.8rem; }
-
-@media (max-width: 600px) {
-  th, td { font-size: 0.8rem; padding: 2px 3px; }
-  .ctrl-btn { width: 18px; height: 18px; font-size: 9px; }
-  .keypad-grid button { padding: 10px; font-size: 1rem; }
-  textarea { font-size: 0.8rem; }
-}
-</style>
-</head>
-
-<body>
-<div class="overlay">
-<h1>Board Games Scorer</h1>
-
-<select id="savedGames"></select>
-<button onclick="loadGame()">Load</button>
-<button onclick="saveGame()">Save</button>
-<button id="toggleEdit" onclick="toggleEdit()">Edit mode</button>
-
-<input id="gameName" placeholder="Name ...">
-<button onclick="newGame()">New</button>
-
-<hr>
-
-<div id="config" style="display:none">
-<h2 id="title"></h2>
-
-<input id="bgUrl" placeholder="URL background image ...">
-<button onclick="setBackground()">Apply</button>
-
-<h3>Players</h3>
-<input id="playerName" placeholder="Player ...">
-<button onclick="addPlayer()">Add</button>
-
-<h3>Item</h3>
-<input id="sectionName" placeholder="Item ...">
-<input id="mult" type="number" value="1">
-<button onclick="addSection()">Add</button>
-
-<h3>Score</h3>
-<div id="table"></div>
-
-<hr>
-<h3>Export / Import all</h3>
-<button onclick="exportAllGames()">Export all</button>
-<textarea id="exportArea" rows="4" style="width:100%;" placeholder="The exported JSON will appear here"></textarea>
-<textarea id="importArea" rows="4" style="width:100%;" placeholder="Paste a JSON here to import"></textarea>
-<button onclick="importAllGames()">Import all</button>
-
-</div>
-</div>
-
-<!-- TECLADO NUMÉRICO -->
-<div id="keypadOverlay" onclick="closeKeypad(event)">
-  <div id="keypad">
-    <div id="display">0</div>
-    <div class="keypad-grid">
-      <button onclick="press('7')">7</button>
-      <button onclick="press('8')">8</button>
-      <button onclick="press('9')">9</button>
-      <button onclick="press('4')">4</button>
-      <button onclick="press('5')">5</button>
-      <button onclick="press('6')">6</button>
-      <button onclick="press('1')">1</button>
-      <button onclick="press('2')">2</button>
-      <button onclick="press('3')">3</button>
-      <button onclick="press('0')">0</button>
-      <button onclick="press('-')">±</button>
-      <button onclick="clearDisplay()">⌫</button>
-    </div>
-    <div class="keypad-actions">
-      <button onclick="cancelKeypad()">Cancel</button>
-      <button onclick="confirmKeypad()">OK</button>
-    </div>
-  </div>
-</div>
-
-<script>
-let game=null,currentCell=null,currentValue="0";
-let editMode=false;
-
-/* juego */
-function newGame(){
-  if(!gameName.value) return;
-  game={name:gameName.value,players:[],sections:[],scores:{},background:""};
-  showGame();
-}
-function showGame(){
-  config.style.display="block";
-  title.innerText=game.name;
-  document.body.style.backgroundImage=game.background?`url(${game.background})`:"none";
-  render();updateSavedGames();
-}
-function setBackground(){
-  game.background=bgUrl.value;
-  document.body.style.backgroundImage=`url(${game.background})`;
-}
-
-/* jugadores */
-function addPlayer(){
-  const p=playerName.value;
-  if(!p||game.players.includes(p)) return;
-  game.players.push(p);game.scores[p]={};render();
-}
-function movePlayer(i,d){
-  const j=i+d;if(j<0||j>=game.players.length) return;
-  [game.players[i],game.players[j]]=[game.players[j],game.players[i]];
-  render();
-}
-function removePlayer(i){
-  const p=game.players[i];
-  game.players.splice(i,1);
-  delete game.scores[p];
-  render();
-}
-
-/* apartados */
-function addSection(){
-  const s=sectionName.value;
-  if(!s) return;
-  game.sections.push({name:s,mult:Number(mult.value)});
-  render();
-}
-function moveSection(i,d){
-  const j=i+d;if(j<0||j>=game.sections.length) return;
-  [game.sections[i],game.sections[j]]=[game.sections[j],game.sections[i]];
-  render();
-}
-function removeSection(i){
-  const s=game.sections[i].name;
-  game.sections.splice(i,1);
-  game.players.forEach(p=>delete game.scores[p][s]);
-  render();
-}
-
-/* teclado */
-function openKeypad(sec,p){
-  currentCell={sec,p};
-  currentValue=String(game.scores[p][sec]||0);
-  display.innerText=currentValue;
-  keypadOverlay.style.display="flex";
-}
-function press(v){
-  currentValue=v==='-'?
-    (currentValue.startsWith('-')?currentValue.slice(1):'-'+currentValue):
-    (currentValue==="0"?v:currentValue+v);
-  display.innerText=currentValue;
-}
-function clearDisplay(){currentValue="0";display.innerText=currentValue}
-function cancelKeypad(){keypadOverlay.style.display="none"}
-function confirmKeypad(){
-  game.scores[currentCell.p][currentCell.sec]=Number(currentValue)||0;
-  keypadOverlay.style.display="none";render();
-}
-function closeKeypad(e){if(e.target.id==="keypadOverlay")cancelKeypad()}
-
-/* tabla */
-function render(){
-  let tableClass = editMode ? 'edit-mode' : 'compact';
-  let h=`<div style='overflow-x:auto'><table class="${tableClass}"><thead><tr><th>Item</th>`;
-  game.players.forEach((p,i)=>h+=`
-    <th>
-      <div>${p}</div>
-      <div class="ctrl">
-        <button class="ctrl-btn move" onclick="movePlayer(${i},-1)">◀</button>
-        <button class="ctrl-btn move" onclick="movePlayer(${i},1)">▶</button>
-        <button class="ctrl-btn del" onclick="removePlayer(${i})">✖</button>
       </div>
-    </th>`);
-  h+="</tr></thead><tbody>";
+    </div>
 
-  game.sections.forEach((s,i)=>{
-    h+=`
-    <tr>
-      <td>${s.name} ×${s.mult}
-        <div class="ctrl">
-          <button class="ctrl-btn move" onclick="moveSection(${i},-1)">▲</button>
-          <button class="ctrl-btn move" onclick="moveSection(${i},1)">▼</button>
-          <button class="ctrl-btn del" onclick="removeSection(${i})">✖</button>
+    <!-- TECLADO NUMÉRICO -->
+    <div id="keypadOverlay" onclick="closeKeypad(event)">
+      <div id="keypad">
+        <div id="display">0</div>
+        <div class="keypad-grid">
+          <button onclick="press('7')">7</button>
+          <button onclick="press('8')">8</button>
+          <button onclick="press('9')">9</button>
+          <button onclick="press('4')">4</button>
+          <button onclick="press('5')">5</button>
+          <button onclick="press('6')">6</button>
+          <button onclick="press('1')">1</button>
+          <button onclick="press('2')">2</button>
+          <button onclick="press('3')">3</button>
+          <button onclick="press('0')">0</button>
+          <button onclick="press('-')">±</button>
+          <button onclick="clearDisplay()">⌫</button>
         </div>
-      </td>`;
-    game.players.forEach(p=>{
-      h+=`<td class="score" onclick="openKeypad('${s.name}','${p}')">${game.scores[p][s.name]||0}</td>`;
-    });
-    h+="</tr>";
-  });
+        <div class="keypad-actions">
+          <button onclick="cancelKeypad()">Cancel</button>
+          <button onclick="confirmKeypad()">OK</button>
+        </div>
+      </div>
+    </div>
 
-  // fila de totales
-  h+="<tr style='font-weight:bold;background:#e0e0e0'><td>Total</td>";
-  game.players.forEach(p=>{
-    let total=0;
-    game.sections.forEach(s=>{
-      let v=game.scores[p][s.name]||0;
-      total += v*s.mult;
-    });
-    h+=`<td>${total}</td>`;
-  });
-  h+="</tr>";
-
-  h+="</tbody></table></div>";
-  table.innerHTML=h;
-}
-
-/* Modo edición */
-function toggleEdit(){
-  editMode=!editMode;
-  toggleEdit.innerText = editMode ? "Modo Normal" : "Modo Edición";
-  render();
-}
-
-const STORAGE_KEY = "allGames"; // Aquí guardamos la lista de juegos
-
-/* Guardar o actualizar el juego actual */
-function saveGame() {
-  if(!game) return;
-
-  let allGames = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
-
-  // buscar si ya existe un juego con el mismo nombre y actualizarlo
-  const idx = allGames.findIndex(g => g.name === game.name);
-  const savedGame = {
-    name: game.name,
-    players: game.players,
-    sections: game.sections,
-    background: game.background
-  };
-
-  if(idx >= 0) allGames[idx] = savedGame;
-  else allGames.push(savedGame);
-
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(allGames));
-  updateSavedGames();
-}
-
-/* Cargar un juego por índice en la lista */
-function loadGame() {
-  const idx = savedGames.selectedIndex - 1; // -1 porque la primera opción es "-- Games --"
-  if(idx < 0) return;
-
-  const allGames = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
-  const data = allGames[idx];
-  if(!data) return;
-
-  game = {...data, scores:{}};
-  data.players.forEach(p => game.scores[p] = {});
-  showGame();
-}
-
-/* Actualizar <select> de juegos */
-function updateSavedGames() {
-  savedGames.innerHTML = "<option value=''>-- Games --</option>";
-  const allGames = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
-  allGames.forEach((g, i) => {
-    savedGames.innerHTML += `<option value="${i}">${g.name}</option>`;
-  });
-}
-
-/* Exportar todos los juegos */
-function exportAllGames() {
-  const allGames = localStorage.getItem(STORAGE_KEY) || "[]";
-  exportArea.value = allGames;
-}
-
-/* Importar todos los juegos */
-function importAllGames() {
-  try {
-    const imported = JSON.parse(importArea.value);
-    if(!Array.isArray(imported)) throw "JSON inválido";
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(imported));
-    updateSavedGames();
-    alert("Todos los juegos importados correctamente");
-  } catch(e) {
-    alert("JSON inválido");
-  }
-}
-
-/* Inicialización al cargar la página */
-window.onload = () => {
-  updateSavedGames();
-  const allGames = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
-
-  if(allGames.length > 0){
-    const data = allGames[0];
-    game = {...data, scores:{}};
-    data.players.forEach(p => game.scores[p] = {});
-    showGame();
-  } else {
-    game = {name:"Nuevo Juego", players:[], sections:[], scores:{}, background:""};
-    showGame();
-  }
-};
-
-</script>
-</body>
+    <script src="js/scripts.js"></script>
+  </body>
 </html>
